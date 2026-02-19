@@ -565,7 +565,7 @@ async function callClaude(sys,msg,maxT){
   if(!k)throw new Error('API key contains invalid characters — please re-paste it from console.anthropic.com');
   var r;
   try{
-    r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:maxT,temperature:0.25,system:sys,messages:[{role:'user',content:msg}]})});
+    r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:maxT,temperature:0.25,system:sys,messages:[{role:'user',content:msg}]})});
   }catch(netErr){
     throw new Error('Network error — check your internet connection. Detail: '+netErr.message);
   }
