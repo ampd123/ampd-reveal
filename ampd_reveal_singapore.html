@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ampd Reveal — Singapore Fast Food</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#6C47FF;--primary-light:#F0ECFF;--primary-dark:#4B2FCC;
+  --green:#00C48C;--green-light:#E5FBF4;--green-dark:#00996D;
+  --red:#FF4D6A;--red-light:#FFF0F2;
+  --orange:#FF9F43;--orange-light:#FFF6ED;
+  --navy:#1a1a2e;
+  --bg:#FAFAFA;--card:#fff;--border:#EBEBEB;
+  --text:#111111;--text-secondary:#666666;--heading:#0A0A0A;--muted:#8B8BA3;
+  --card-radius:16px;--btn-radius:8px;
+  --shadow-card:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.05);
+  --shadow-hover:0 4px 20px rgba(0,0,0,.10);
+  --accent-objectives:#6C47FF;
+  --accent-guide:#00C48C;
+  --accent-brands:#FF9F43;
+  --accent-audience:#3B82F6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* ── TOP BAR ── */
+.topbar{height:52px;background:var(--heading);color:white;display:flex;align-items:center;padding:0 24px;flex-shrink:0;gap:12px}
+.topbar-brand{display:flex;align-items:center;gap:10px}
+.topbar-logo{width:28px;height:28px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:white;letter-spacing:-.5px;flex-shrink:0}
+.topbar-name{font-size:15px;font-weight:700;letter-spacing:-.2px}
+.topbar-divider{width:1px;height:16px;background:rgba(255,255,255,.2);flex-shrink:0}
+.topbar-study{font-size:12px;color:rgba(255,255,255,.5);font-weight:500}
+
+/* ── WIZARD BODY ── */
+.wizard-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── STEP INDICATOR ── */
+.step-indicator{background:white;border-bottom:1px solid var(--border);padding:20px 0 16px;flex-shrink:0}
+.step-indicator-inner{display:flex;align-items:flex-start;justify-content:center;max-width:480px;margin:0 auto;position:relative}
+.si-step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;cursor:default}
+.si-step:not(:last-child)::after{content:'';position:absolute;top:15px;left:calc(50% + 17px);right:calc(-50% + 17px);height:2px;background:var(--border);z-index:0;transition:background .3s}
+.si-step.completed::after{background:var(--green)}
+.si-circle{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);background:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--text-secondary);position:relative;z-index:1;transition:all .2s;flex-shrink:0}
+.si-step.active .si-circle{border-color:var(--primary);background:var(--primary);color:white}
+.si-step.completed .si-circle{border-color:var(--green);background:var(--green);color:white}
+.si-label{font-size:11px;font-weight:600;color:var(--text-secondary);margin-top:7px;text-align:center;white-space:nowrap;letter-spacing:.1px}
+.si-step.active .si-label{color:var(--primary);font-weight:700}
+.si-step.completed .si-label{color:var(--green-dark)}
+.si-step.clickable{cursor:pointer}
+.si-step.clickable:hover .si-circle{opacity:.8}
+
+/* ── WIZARD CONTENT ── */
+.wizard-content{flex:1;overflow-y:auto;padding:44px 24px 80px}
+.wizard-step{display:none;max-width:800px;margin:0 auto}
+.wizard-step.active{display:block}
+
+/* ── STEP HERO ── */
+.step-hero{margin-bottom:32px}
+.step-hero h1{font-size:30px;font-weight:800;letter-spacing:-.5px;color:var(--heading);margin-bottom:8px;line-height:1.2}
+.step-hero p{font-size:15px;color:var(--text-secondary);line-height:1.6;max-width:580px}
+
+/* ── STEP NAV ── */
+.step-nav{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+
+/* ── SUB-PANEL ── */
+.sub-panel{display:none}
+.sub-panel.active{display:block}
+
+/* ── BREADCRUMB ── */
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:24px}
+.breadcrumb-back{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--primary);cursor:pointer;background:none;border:none;padding:0;font-family:inherit}
+.breadcrumb-back:hover{opacity:.75}
+.breadcrumb-sep{color:var(--border);font-size:18px;line-height:1}
+.breadcrumb-current{font-size:13px;color:var(--text-secondary)}
+
+/* ── OVERVIEW GRID ── */
+.overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px}
+@media(max-width:600px){.overview-grid{grid-template-columns:1fr}}
+.overview-card{background:var(--card);border-radius:var(--card-radius);border:1px solid var(--border);box-shadow:var(--shadow-card);overflow:hidden;cursor:pointer;transition:box-shadow .15s,transform .15s;display:flex;flex-direction:column}
+.overview-card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px)}
+.overview-card-stripe{height:4px;width:100%;flex-shrink:0}
+.overview-card-body{padding:20px 20px 16px;flex:1;display:flex;flex-direction:column}
+.overview-card-icon{font-size:22px;margin-bottom:10px;line-height:1}
+.overview-card-title{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-secondary);margin-bottom:6px}
+.overview-card-preview{font-size:15px;font-weight:700;color:var(--heading);margin-bottom:5px;line-height:1.35}
+.overview-card-meta{font-size:12px;color:var(--text-secondary);margin-bottom:10px}
+.overview-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;min-height:22px}
+.overview-tag{font-size:11px;font-weight:600;padding:2px 9px;border-radius:6px;background:var(--bg);color:var(--text-secondary);border:1px solid var(--border)}
+.overview-card-footer{display:flex;justify-content:flex-end;align-items:center;padding-top:10px;border-top:1px solid var(--border);margin-top:auto}
+.overview-card-edit{font-size:12px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:4px;cursor:pointer;background:none;border:none;font-family:inherit}
+.overview-card-edit:hover{opacity:.75}
+
+/* ── INTAKE FORM ── */
+.intake-form{background:var(--card);border-radius:var(--card-radius);border:1px solid var(--border);padding:28px 32px;box-shadow:var(--shadow-card)}
+.intake-label{font-size:13px;font-weight:700;color:var(--heading);margin-bottom:6px;display:block}
+.intake-sublabel{font-size:12px;color:var(--text-secondary);margin-bottom:10px;display:block;line-height:1.5}
+.intake-textarea{width:100%;min-height:220px;border:1.5px solid var(--border);border-radius:10px;padding:16px;font-size:14px;font-family:inherit;color:var(--text);line-height:1.7;resize:vertical;outline:none;transition:border-color .15s;background:var(--bg)}
+.intake-textarea:focus{border-color:var(--primary);background:white}
+.intake-textarea::placeholder{color:#BDBDBD}
+.intake-divider{height:1px;background:var(--border);margin:22px 0}
+.intake-api-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.intake-api-label{font-size:12px;font-weight:700;color:var(--text-secondary);white-space:nowrap}
+.intake-api-input{flex:1;min-width:200px;border:1.5px solid var(--border);border-radius:8px;padding:9px 14px;font-size:12px;font-family:monospace;color:var(--text);outline:none;background:var(--bg);transition:border-color .15s}
+.intake-api-input:focus{border-color:var(--primary);background:white}
+.intake-api-input::placeholder{color:#BDBDBD}
+.intake-api-status{font-size:11px;font-weight:600;color:var(--text-secondary);white-space:nowrap}
+.intake-api-status.ok{color:var(--green)}
+.intake-generating{display:none;align-items:center;gap:10px;margin-top:16px;font-size:13px;font-weight:600;color:var(--primary)}
+.intake-generating.visible{display:flex}
+
+/* ── BUTTONS ── */
+.btn{padding:10px 20px;border-radius:var(--btn-radius);border:none;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:var(--primary);color:white}
+.btn-primary:hover:not(:disabled){background:var(--primary-dark)}
+.btn-secondary{background:white;color:var(--text);border:1.5px solid var(--border)}
+.btn-secondary:hover:not(:disabled){background:var(--bg)}
+.btn-dark{background:var(--heading);color:white}
+.btn-dark:hover:not(:disabled){opacity:.82}
+.btn-lg{padding:13px 26px;font-size:14px;border-radius:10px}
+
+/* ── SYSTEM PROMPT ACTIONS BAR ── */
+.sp-actions-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:12px;flex-wrap:wrap;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.sp-stats{display:flex;gap:20px;flex-wrap:wrap}
+.sp-stat-item{font-size:13px;color:var(--text-secondary)}
+.sp-stat-item strong{color:var(--heading);font-weight:700}
+.sp-actions-right{display:flex;gap:10px}
+
+/* ── CARDS (content sections) ── */
+.card{background:var(--card);border-radius:var(--card-radius);border:1px solid var(--border);padding:20px 22px;position:relative;margin-bottom:12px;box-shadow:var(--shadow-card)}
+.card-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.card-id{font-size:10px;font-weight:700;color:white;background:var(--primary);border-radius:6px;padding:2px 8px;flex-shrink:0;margin-top:2px}
+.card-title{font-size:15px;font-weight:700}
+.field-label{font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;margin-top:14px}
+.field-label:first-child{margin-top:0}
+.field-value{font-size:13px;color:var(--text);line-height:1.65}
+
+/* ── PILLS ── */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.1px}
+.pill-purple{background:var(--primary-light);color:var(--primary)}
+.pill-green{background:var(--green-light);color:var(--green-dark)}
+.pill-orange{background:var(--orange-light);color:var(--orange)}
+.pill-red{background:var(--red-light);color:var(--red)}
+
+/* ── DEMO GRID ── */
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:8px 0}
+.demo-cell{background:var(--primary-light);border-radius:8px;padding:9px 11px}
+.demo-cell .label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--primary);margin-bottom:2px}
+.demo-cell .value{font-size:12px;color:var(--text);font-weight:600;line-height:1.35}
+.tag{display:inline-block;background:var(--primary-light);color:var(--primary);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;margin:2px 2px 2px 0}
+.tag.exclude{background:var(--red-light);color:var(--red)}
+.ans-tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px}
+.ans-ok{background:var(--green-light);color:var(--green-dark)}
+.ans-dq{background:var(--red-light);color:var(--red)}
+.screening-q{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:7px}
+.screening-q .q-text{font-size:13px;font-weight:600;margin-bottom:5px}
+.ans-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;align-items:center}
+
+/* ── TOPIC GUIDE ── */
+.tg-section{background:var(--card);border-radius:var(--card-radius);border:1px solid var(--border);overflow:hidden;margin-bottom:0;box-shadow:var(--shadow-card)}
+.tg-sec-hdr{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg);border-bottom:1px solid var(--border)}
+.tg-sec-hdr-left{display:flex;align-items:center;gap:8px}
+.tg-sec-goal{padding:10px 18px;background:#FAFAFA;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.5}
+.tg-sec-goal strong{color:var(--text)}
+.tg-q{padding:16px 18px;border-bottom:1px solid var(--border);position:relative}
+.tg-q:last-child{border-bottom:none}
+.tg-q-top{display:flex;align-items:flex-start;gap:9px;margin-bottom:6px}
+.tg-q-text{font-size:14px;font-weight:600;line-height:1.45;flex:1}
+.tg-q-purpose{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;padding-left:40px}
+.tg-probes{padding-left:40px;margin-bottom:8px}
+.tg-probe{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:var(--primary-light);border-radius:8px;margin-bottom:6px;position:relative}
+.tg-probe-trigger{font-size:11px;color:var(--primary-dark);font-weight:600;margin-bottom:2px}
+.tg-probe-text{font-size:12px;color:var(--text);font-weight:500;line-height:1.45}
+.tg-probe-purpose{font-size:11px;color:var(--muted);margin-top:2px}
+.tg-satisfaction{margin-left:40px;display:inline-flex;align-items:center;gap:5px;padding:5px 11px;background:var(--green-light);border-radius:8px;font-size:11px;font-weight:600;color:var(--green-dark)}
+.tg-depth{display:flex;align-items:center;gap:3px;margin-left:8px;flex-shrink:0}
+.tg-depth-dot{width:7px;height:7px;border-radius:50%;background:var(--border)}
+.tg-depth-dot.active{background:var(--primary)}
+
+/* ── DELETE BUTTONS ── */
+.del-btn{position:absolute;top:8px;right:8px;width:22px;height:22px;border:none;background:var(--red-light);color:var(--red);border-radius:5px;font-size:13px;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:5;transition:all .15s;line-height:1}
+.del-btn:hover{background:var(--red);color:white}
+.tg-q:hover>.del-btn,.tg-probe:hover>.del-btn{display:flex}
+
+/* ── BRANDS ── */
+.brands-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.brand-card{background:var(--card);border-radius:var(--card-radius);border:1px solid var(--border);padding:14px 16px;box-shadow:var(--shadow-card)}
+.brand-name{font-size:14px;font-weight:700;margin-bottom:3px}
+.brand-cat{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:2px 7px;border-radius:5px;margin-bottom:6px}
+.cat-QSR{background:#e8f0fe;color:#1a5fb4}
+.cat-casual_dining{background:var(--primary-light);color:var(--primary)}
+.cat-delivery{background:var(--green-light);color:var(--green-dark)}
+.cat-hawker{background:var(--orange-light);color:var(--orange)}
+.cat-other{background:#f0f0f4;color:var(--muted)}
+.brand-pronunciation{font-size:11px;color:var(--muted);font-style:italic;margin-bottom:5px}
+.brand-relevance{font-size:11px;color:var(--muted);line-height:1.45}
+
+/* ── REGEN TOOLBARS ── */
+.regen-section{margin-bottom:14px}
+.regen-toolbar{background:white;border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-top:5px;display:none;box-shadow:var(--shadow-card)}
+.regen-section:hover .regen-toolbar{display:block}
+.regen-row{display:flex;gap:7px;align-items:flex-start}
+.regen-ta{flex:1;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;font-family:inherit;resize:vertical;min-height:44px;outline:none;color:var(--text);transition:border .15s}
+.regen-ta:focus{border-color:var(--primary)}
+.regen-ta::placeholder{color:#c0c0cc}
+.regen-hint{font-size:10px;color:var(--muted);margin-top:4px}
+.loading-overlay{position:absolute;inset:0;background:rgba(255,255,255,.92);border-radius:var(--card-radius);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--primary);gap:7px;z-index:10}
+.spinner{width:15px;height:15px;border:2.5px solid var(--primary-light);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── SYSTEM PROMPT ── */
+.sp-section{background:var(--card);border-radius:var(--card-radius);border:1px solid var(--border);overflow:hidden;position:relative;margin-bottom:0;box-shadow:var(--shadow-card)}
+.sp-sec-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:var(--bg);border-bottom:1px solid var(--border)}
+.sp-sec-label{font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--primary)}
+.sp-sec-body{padding:12px 16px;font-size:13px;line-height:1.7}
+.sp-rules{list-style:none;padding:0;margin:4px 0 0}
+.sp-rules li{display:flex;gap:7px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:flex-start}
+.sp-rules li:last-child{border-bottom:none}
+.sp-rules li::before{content:"\2192";color:var(--primary);font-weight:700;flex-shrink:0}
+.sp-interview-section{background:var(--card);border-radius:var(--card-radius);border:1px solid var(--border);overflow:hidden;position:relative;margin-bottom:0;box-shadow:var(--shadow-card)}
+.sp-isec-hdr{background:linear-gradient(135deg,#1a1a2e,#2d1b69);color:white;padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+.sp-isec-hdr-left{display:flex;align-items:center;gap:8px}
+.sp-isec-num{font-size:16px;font-weight:800;opacity:.25}
+.sp-isec-title{font-size:13px;font-weight:600}
+.sp-isec-mins{font-size:10px;opacity:.5;background:rgba(255,255,255,.1);padding:2px 7px;border-radius:6px}
+.sp-q-block{border-bottom:1px solid var(--border);padding:12px 16px;position:relative}
+.sp-q-block:last-child{border-bottom:none}
+.sp-q-hdr{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.sp-q-num{font-size:10px;font-weight:700;color:white;background:var(--primary);border-radius:5px;padding:2px 6px;flex-shrink:0;margin-top:2px}
+.sp-q-instruction{font-size:13px;font-weight:500;line-height:1.45}
+.sp-probes{margin:6px 0 8px 26px}
+.sp-probe{font-size:12px;color:var(--text);padding:5px 0 5px 10px;border-left:3px solid var(--primary);margin-bottom:4px;line-height:1.45}
+.sp-probe .if{color:var(--primary);font-weight:700}
+.sp-move-on{font-size:11px;background:var(--green-light);color:var(--green-dark);border-radius:7px;padding:4px 10px;display:inline-flex;gap:4px;align-items:center;margin-left:26px;font-weight:600}
+.sp-move-on::before{content:"\2713";font-weight:700}
+.brand-table{width:100%;border-collapse:collapse;font-size:12px}
+.brand-table th{text-align:left;font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding:7px 9px;border-bottom:2px solid var(--border);background:var(--bg)}
+.brand-table td{padding:8px 9px;border-bottom:1px solid var(--border)}
+.brand-table tr:last-child td{border-bottom:none}
+.brand-table tr:hover td{background:var(--bg)}
+.brand-nm{font-weight:600}
+.brand-al{color:var(--muted);font-size:11px}
+.brand-pr{font-style:italic;color:var(--primary);font-size:11px}
+.raw-block{background:#1E1E2E;color:#CDD6F4;border-radius:var(--card-radius);padding:14px 16px;font-family:'SF Mono','Fira Code',monospace;font-size:11px;line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:460px;overflow-y:auto}
+.section-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin:16px 0 7px}
+.char-bar{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.char-stat{font-size:12px;color:var(--muted)}
+.char-stat strong{color:var(--text);font-weight:700}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--heading);color:white;padding:10px 18px;border-radius:9px;font-size:12px;font-weight:600;z-index:9999;transform:translateY(60px);opacity:0;transition:all .25s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.error{background:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">aR</div>
+    <span class="topbar-name">ampd Reveal</span>
+    <div class="topbar-divider"></div>
+    <span class="topbar-study" id="topbar-study-name">Brief Builder</span>
+  </div>
+</div>
+
+<!-- WIZARD BODY -->
+<div class="wizard-body">
+
+  <!-- STEP INDICATOR -->
+  <div class="step-indicator">
+    <div class="step-indicator-inner">
+      <div class="si-step active" id="si-1">
+        <div class="si-circle">1</div>
+        <div class="si-label">Brief Intake</div>
+      </div>
+      <div class="si-step" id="si-2">
+        <div class="si-circle">2</div>
+        <div class="si-label">Brief Optimization</div>
+      </div>
+      <div class="si-step" id="si-3">
+        <div class="si-circle">3</div>
+        <div class="si-label">System Prompt</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIZARD CONTENT -->
+  <div class="wizard-content">
+
+    <!-- ════════════════════════════════════════
+         STEP 1: BRIEF INTAKE
+    ════════════════════════════════════════ -->
+    <div id="wizard-step-1" class="wizard-step active">
+
+      <div class="step-hero">
+        <h1>Start with your brief</h1>
+        <p>Paste or type your research brief below. Claude will read it and generate a structured research design — objectives, audience, topic guide, and brand list.</p>
+      </div>
+
+      <div class="intake-form">
+        <label class="intake-label" for="briefTextarea">Your Research Brief</label>
+        <span class="intake-sublabel">Include your research goals, target audience, study type, interview length, and any specific brands you want covered.</span>
+        <textarea
+          id="briefTextarea"
+          class="intake-textarea"
+          placeholder="e.g. We want to understand how consumers in Singapore think about fast food brands — which come to mind first, what food items they associate with each brand, how healthy they perceive the offerings, and what drives their choices.
+
+Key research questions:
+1. Who are the key players in the mind of consumers?
+2. What food items do consumers associate with each brand?
+3. How healthy do they perceive the offerings?
+4. What is the value proposition of each brand?
+
+Research type: Consumer UX / Insights
+Interview length: 20 minutes
+Target: Singapore residents aged 18–45 who eat fast food at least once a month"
+        ></textarea>
+
+        <div class="intake-divider"></div>
+
+        <div class="intake-api-row">
+          <span class="intake-api-label">API Key</span>
+          <input
+            type="password"
+            id="apiKeyInput"
+            class="intake-api-input"
+            placeholder="sk-ant-..."
+            oninput="updateApiStatus()"
+          />
+          <span class="intake-api-status" id="apiStatus">Not set</span>
+        </div>
+
+        <div class="intake-generating" id="intakeGenerating">
+          <div class="spinner"></div>
+          Generating your research design — this takes about 20–30 seconds…
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn btn-primary btn-lg" id="generateBtn" onclick="generateFromBrief()">
+          Generate Research Design →
+        </button>
+      </div>
+
+    </div><!-- /wizard-step-1 -->
+
+
+    <!-- ════════════════════════════════════════
+         STEP 2: BRIEF OPTIMIZATION
+    ════════════════════════════════════════ -->
+    <div id="wizard-step-2" class="wizard-step">
+
+      <!-- 2a: OVERVIEW DASHBOARD -->
+      <div id="overview-panel" class="sub-panel active">
+
+        <div class="step-hero">
+          <h1>Review your research design</h1>
+          <p>Claude has structured your brief into four components. Click any card to review and edit the full detail — hover any section to reveal AI regeneration options.</p>
+        </div>
+
+        <div class="overview-grid">
+
+          <!-- Card 1: Research Objectives -->
+          <div class="overview-card" onclick="showSubPanel('objectives')">
+            <div class="overview-card-stripe" style="background:var(--accent-objectives)"></div>
+            <div class="overview-card-body">
+              <div class="overview-card-icon">🎯</div>
+              <div class="overview-card-title">Research Objectives</div>
+              <div class="overview-card-preview" id="ov-obj-preview">Loading…</div>
+              <div class="overview-card-meta" id="ov-obj-meta"></div>
+              <div class="overview-card-footer">
+                <button class="overview-card-edit">Edit &rarr;</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Topic Guide -->
+          <div class="overview-card" onclick="showSubPanel('guide')">
+            <div class="overview-card-stripe" style="background:var(--accent-guide)"></div>
+            <div class="overview-card-body">
+              <div class="overview-card-icon">📋</div>
+              <div class="overview-card-title">Topic Guide</div>
+              <div class="overview-card-preview" id="ov-guide-preview">Loading…</div>
+              <div class="overview-card-meta" id="ov-guide-meta"></div>
+              <div class="overview-card-footer">
+                <button class="overview-card-edit">Edit &rarr;</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Brand Registry -->
+          <div class="overview-card" onclick="showSubPanel('brands')">
+            <div class="overview-card-stripe" style="background:var(--accent-brands)"></div>
+            <div class="overview-card-body">
+              <div class="overview-card-icon">🏷️</div>
+              <div class="overview-card-title">Brand Registry</div>
+              <div class="overview-card-preview" id="ov-brands-preview">Loading…</div>
+              <div class="overview-card-meta" id="ov-brands-meta"></div>
+              <div class="overview-tags" id="ov-brands-tags"></div>
+              <div class="overview-card-footer">
+                <button class="overview-card-edit">Edit &rarr;</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Target Audience -->
+          <div class="overview-card" onclick="showSubPanel('audience')">
+            <div class="overview-card-stripe" style="background:var(--accent-audience)"></div>
+            <div class="overview-card-body">
+              <div class="overview-card-icon">👥</div>
+              <div class="overview-card-title">Target Audience</div>
+              <div class="overview-card-preview" id="ov-aud-preview">Loading…</div>
+              <div class="overview-card-meta" id="ov-aud-meta"></div>
+              <div class="overview-tags" id="ov-aud-tags"></div>
+              <div class="overview-card-footer">
+                <button class="overview-card-edit">Edit &rarr;</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /overview-grid -->
+
+        <div class="step-nav">
+          <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+          <button class="btn btn-primary btn-lg" id="genSPBtn" onclick="generateSysPromptAndAdvance()">
+            Generate System Prompt →
+          </button>
+        </div>
+
+      </div><!-- /overview-panel -->
+
+
+      <!-- 2b: DRILL-IN — Research Objectives -->
+      <div id="sub-objectives" class="sub-panel">
+        <div class="breadcrumb">
+          <button class="breadcrumb-back" onclick="backToOverview()">← Overview</button>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Research Objectives</span>
+        </div>
+        <div class="step-hero" style="margin-bottom:22px">
+          <h1>Research Objectives</h1>
+          <p>What this study is designed to uncover — each objective drives the interview design. Hover any card to reveal AI edit options.</p>
+        </div>
+        <div id="panel-objectives"></div>
+        <div class="step-nav">
+          <button class="btn btn-secondary" onclick="backToOverview()">← Back to Overview</button>
+        </div>
+      </div>
+
+      <!-- 2c: DRILL-IN — Target Audience -->
+      <div id="sub-audience" class="sub-panel">
+        <div class="breadcrumb">
+          <button class="breadcrumb-back" onclick="backToOverview()">← Overview</button>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Target Audience</span>
+        </div>
+        <div class="step-hero" style="margin-bottom:22px">
+          <h1>Target Audience</h1>
+          <p>Who we're recruiting, how to screen them, and what makes them the right respondents.</p>
+        </div>
+        <div id="panel-audience"></div>
+        <div class="step-nav">
+          <button class="btn btn-secondary" onclick="backToOverview()">← Back to Overview</button>
+        </div>
+      </div>
+
+      <!-- 2d: DRILL-IN — Topic Guide -->
+      <div id="sub-guide" class="sub-panel">
+        <div class="breadcrumb">
+          <button class="breadcrumb-back" onclick="backToOverview()">← Overview</button>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Topic Guide</span>
+        </div>
+        <div class="step-hero" style="margin-bottom:22px">
+          <h1>Topic Guide</h1>
+          <p>Interview structure — hover any question or probe to reveal edit and delete options.</p>
+        </div>
+        <div id="panel-guide"></div>
+        <div class="step-nav">
+          <button class="btn btn-secondary" onclick="backToOverview()">← Back to Overview</button>
+        </div>
+      </div>
+
+      <!-- 2e: DRILL-IN — Brand Registry -->
+      <div id="sub-brands" class="sub-panel">
+        <div class="breadcrumb">
+          <button class="breadcrumb-back" onclick="backToOverview()">← Overview</button>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Brand Registry</span>
+        </div>
+        <div class="step-hero" style="margin-bottom:22px">
+          <h1>Brand Registry</h1>
+          <p>Every brand the agent should recognise, with aliases and pronunciation guide.</p>
+        </div>
+        <div id="panel-brands"></div>
+        <div class="step-nav">
+          <button class="btn btn-secondary" onclick="backToOverview()">← Back to Overview</button>
+        </div>
+      </div>
+
+    </div><!-- /wizard-step-2 -->
+
+
+    <!-- ════════════════════════════════════════
+         STEP 3: SYSTEM PROMPT
+    ════════════════════════════════════════ -->
+    <div id="wizard-step-3" class="wizard-step">
+
+      <div class="step-hero">
+        <h1>System Prompt</h1>
+        <p>Your complete Gemini voice agent instructions — hover any section to edit, then copy to AI Studio.</p>
+      </div>
+
+      <div class="sp-actions-bar">
+        <div class="sp-stats" id="sp-stats-bar">
+          <!-- populated by renderSysPrompt() -->
+        </div>
+        <div class="sp-actions-right">
+          <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+          <button class="btn btn-dark" onclick="copyRawPrompt()">Copy to Gemini</button>
+        </div>
+      </div>
+
+      <div id="panel-sysprompt"></div>
+
+    </div><!-- /wizard-step-3 -->
+
+  </div><!-- /wizard-content -->
+</div><!-- /wizard-body -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+var DATA=JSON.parse("{\"research_objectives\": [{\"id\": \"RO1\", \"title\": \"Brand Salience & Awareness\", \"objective\": \"Identify which fast food brands spontaneously come to mind for Singapore consumers, and understand the mental hierarchy and triggers that drive top-of-mind recall.\", \"why_it_matters\": \"Brand salience determines which brands are considered at the moment of hunger or purchase intent. Understanding the competitive mental map reveals where brands have strong or weak footholds in consumer consciousness.\", \"priority\": \"primary\", \"success_criteria\": \"Each respondent has named at least three brands unprompted and ranked or described their relative salience; patterns across respondents reveal a clear tier structure of brand awareness.\"}, {\"id\": \"RO2\", \"title\": \"Signature Food Item Associations\", \"objective\": \"Map the specific menu items, flavours, and food experiences that consumers instinctively associate with each fast food brand they mention.\", \"why_it_matters\": \"Iconic product associations anchor brand identity and drive craving-led visits. Gaps or misalignments between brand intent and consumer association signal menu communication failures or opportunities.\", \"priority\": \"primary\", \"success_criteria\": \"Respondents have articulated at least one to two food items per brand mentioned, including sensory or emotional descriptors, allowing a brand-to-item association map to be constructed.\"}, {\"id\": \"RO3\", \"title\": \"Perceived Healthiness of Offerings\", \"objective\": \"Understand how consumers evaluate and rate the healthiness of fast food brands and their menus, including what cues, ingredients, or brand signals inform those perceptions.\", \"why_it_matters\": \"Health perception increasingly influences purchase decisions in Singapore, shaped by government initiatives like Healthier Choice and rising wellness awareness. Brands seen as unhealthy may face long-term consideration decline even among frequent visitors.\", \"priority\": \"primary\", \"success_criteria\": \"Respondents have described their health perception of at least two to three brands with reasoning, and have revealed the specific cues \u2014 ingredients, labelling, portion size, menu variety \u2014 that shape those judgements.\"}, {\"id\": \"RO4\", \"title\": \"Value Proposition & Choice Drivers\", \"objective\": \"Uncover the functional, emotional, and social reasons consumers choose specific fast food brands on any given occasion, including the role of price, convenience, taste, occasion, and brand trust.\", \"why_it_matters\": \"Understanding the layered value proposition of each brand reveals sustainable competitive advantages and vulnerabilities. It also surfaces occasion-based switching behaviour that brands can target with precision marketing.\", \"priority\": \"primary\", \"success_criteria\": \"Respondents have articulated clear reasons for choosing their most-visited brand across at least two different occasions, and have explained what would cause them to switch to a competitor.\"}, {\"id\": \"RO5\", \"title\": \"Occasion & Consumption Context\", \"objective\": \"Identify the situational contexts \u2014 time of day, social setting, mood, location \u2014 in which consumers choose fast food and how context influences brand selection.\", \"why_it_matters\": \"Occasion mapping provides the strategic layer beneath value proposition, revealing when and why different brands win. This enables occasion-specific positioning and media targeting recommendations.\", \"priority\": \"secondary\", \"success_criteria\": \"Respondents have described at least two distinct fast food occasions in their lives and explained how brand choice differs across those occasions.\"}], \"target_audience\": {\"summary\": \"Singapore residents aged 18 to 45 who eat at fast food outlets at least once a month and represent a cross-section of dining motivations from convenience-driven to experience-seeking.\", \"demographics\": {\"age_range\": \"18\u201345\", \"gender\": \"All genders, aim for balanced split\", \"location\": \"Singapore residents (any region)\", \"income\": \"All income bands; ensure mix of lower, middle, and upper-middle income\", \"education\": \"All education levels from secondary school to postgraduate\"}, \"psychographics\": [\"Pragmatic about food choices \u2014 values convenience and reliability\", \"At least moderately food-aware \u2014 notices taste, quality, or ingredients\", \"Socially connected \u2014 eats fast food both alone and with others\", \"Has some awareness of health and nutrition even if not strictly health-conscious\", \"Comfortable expressing opinions about brands and food experiences\", \"Influenced by digital content, peer recommendations, or promotions when choosing where to eat\"], \"professional_context\": \"Mix of students, working professionals, and part-time workers; fast food consumption may be driven by time pressure, budget constraints, social occasions, or habit depending on life stage.\", \"behavioral_criteria\": [\"Eats at a fast food outlet or orders fast food delivery at least once per month\", \"Has visited at least two different fast food brands in the past three months\", \"Makes their own food purchasing decisions (not solely dependent on others to decide)\", \"Has used at least one food delivery app or visited a physical fast food outlet in Singapore in the past 60 days\"], \"exclusion_criteria\": [\"Works or has worked in the past 12 months for a fast food brand, food delivery platform, or food and beverage marketing agency\", \"Follows a strict dietary restriction (e.g. vegan, severe allergy) that prevents them from eating at mainstream fast food outlets entirely\", \"Has not eaten fast food in the past two months\", \"Under 18 years of age\", \"Not a Singapore resident\"], \"screening_questions\": [{\"question\": \"How often do you eat at fast food restaurants or order fast food for delivery in Singapore?\", \"acceptable_answers\": [\"Once a week or more\", \"Two to three times a month\", \"About once a month\"], \"disqualifying_answers\": [\"Less than once a month\", \"Never\"]}, {\"question\": \"How many different fast food brands have you visited or ordered from in the past three months?\", \"acceptable_answers\": [\"Two brands\", \"Three brands\", \"Four or more brands\"], \"disqualifying_answers\": [\"Only one brand\", \"None\"]}, {\"question\": \"Do you currently work, or have you worked in the past 12 months, for a fast food company, food delivery platform, or a marketing or research agency?\", \"acceptable_answers\": [\"No\"], \"disqualifying_answers\": [\"Yes\"]}, {\"question\": \"Are you able to eat at mainstream fast food outlets such as McDonald's, KFC, or Burger King, or are you prevented from doing so by a strict dietary restriction?\", \"acceptable_answers\": [\"Yes, I can eat at these places\", \"I have some preferences but I can still eat at most fast food outlets\"], \"disqualifying_answers\": [\"No, I cannot eat at any mainstream fast food outlets due to dietary restrictions\"]}, {\"question\": \"What is your age?\", \"acceptable_answers\": [\"18\u201324\", \"25\u201334\", \"35\u201345\"], \"disqualifying_answers\": [\"Under 18\", \"46 or older\"]}]}, \"topic_guide\": [{\"section_number\": 1, \"section_title\": \"Welcome & Warm-Up\", \"strategic_goal\": \"Put the respondent at ease, establish their general food and dining habits, and prime them to think about fast food without leading them toward specific brands.\", \"phase\": \"warmup\", \"estimated_minutes\": 3, \"questions\": [{\"q_number\": \"1.1\", \"question\": \"To get us started, can you tell me a little about how you typically handle meals on a busy day in Singapore \u2014 like where you tend to eat and what kinds of food you go for?\", \"question_purpose\": \"Establishes natural eating behaviour and positions fast food within the broader meal landscape without priming specific brands.\", \"probe_depth\": 1, \"probes\": [{\"trigger\": \"When respondent mentions a specific meal occasion like lunch or dinner\", \"probe\": \"And what about that meal specifically \u2014 what usually drives where you end up eating?\", \"purpose\": \"Surfaces occasion-based decision drivers early and naturally.\"}], \"satisfaction_condition\": \"We move on when the respondent has described at least one typical meal scenario and mentioned at least one factor that influences their food choices.\"}, {\"q_number\": \"1.2\", \"question\": \"How often would you say fast food features in your week, and what usually prompts you to go for it?\", \"question_purpose\": \"Confirms frequency and begins to surface the motivational triggers for fast food consumption.\", \"probe_depth\": 1, \"probes\": [{\"trigger\": \"When respondent gives a vague answer like 'when I'm lazy' or 'when I'm busy'\", \"probe\": \"Can you walk me through the last time that happened \u2014 what was going on that day?\", \"purpose\": \"Grounds the answer in a real episode to get richer contextual detail.\"}], \"satisfaction_condition\": \"We move on when the respondent has given a rough frequency and at least one motivational trigger for choosing fast food.\"}]}, {\"section_number\": 2, \"section_title\": \"Brand Awareness & Salience\", \"strategic_goal\": \"Capture spontaneous brand recall, understand the mental hierarchy of fast food brands in Singapore, and identify what cues or contexts trigger each brand's recall.\", \"phase\": \"exploration\", \"estimated_minutes\": 4, \"questions\": [{\"q_number\": \"2.1\", \"question\": \"When you think about fast food in Singapore, which brands come to mind first? Just say whatever comes to you naturally \u2014 there are no right or wrong answers.\", \"question_purpose\": \"Captures top-of-mind spontaneous brand recall without any prompting or category framing.\", \"probe_depth\": 2, \"probes\": [{\"trigger\": \"When respondent has named one or two brands and seems to have stopped\", \"probe\": \"Are there any others that come to mind, even if you visit them less often?\", \"purpose\": \"Extends the recall list to capture secondary and tertiary brand awareness.\"}, {\"trigger\": \"When respondent names a brand\", \"probe\": \"What made you think of that one first?\", \"purpose\": \"Uncovers the salience driver \u2014 whether it is recency, habit, advertising, or emotional connection.\"}], \"satisfaction_condition\": \"We move on when the respondent has named at least three brands and explained why at least one came to mind first.\"}, {\"q_number\": \"2.2\", \"question\": \"Of all the brands you just mentioned, which one would you say you think about most often when you're deciding where to eat \u2014 and why that one?\", \"question_purpose\": \"Identifies the dominant brand in the respondent's consideration set and the reason for its mental primacy.\", \"probe_depth\": 2, \"probes\": [{\"trigger\": \"When respondent says a brand is top of mind because it is convenient or nearby\", \"probe\": \"Beyond convenience, is there anything about the brand itself that keeps it at the top of your mind?\", \"purpose\": \"Distinguishes situational salience from genuine brand affinity.\"}, {\"trigger\": \"When respondent struggles to choose one brand\", \"probe\": \"If you had to pick just one brand that you'd never want to disappear from Singapore, which would it be?\", \"purpose\": \"Forces prioritisation to reveal true brand attachment.\"}], \"satisfaction_condition\": \"We move on when the respondent has identified a top brand and articulated at least one reason for its dominance in their mind.\"}]}, {\"section_number\": 3, \"section_title\": \"Food Item Associations\", \"strategic_goal\": \"Map the specific menu items, flavours, and food experiences consumers associate with each brand they have mentioned, and understand how strong and exclusive those associations are.\", \"phase\": \"exploration\", \"estimated_minutes\": 4, \"questions\": [{\"q_number\": \"3.1\", \"question\": \"Let's talk about the food itself. When you think about the brand you mentioned most \u2014 what food or drink item comes to mind immediately? What do you picture?\", \"question_purpose\": \"Surfaces the iconic product association for the respondent's top brand using visualisation to access instinctive rather than considered responses.\", \"probe_depth\": 2, \"probes\": [{\"trigger\": \"When respondent names a food item\", \"probe\": \"What is it about that item specifically \u2014 is it the taste, the look, the smell, something else?\", \"purpose\": \"Captures the sensory or emotional dimension of the food association, not just the item name.\"}, {\"trigger\": \"When respondent mentions a limited-time or seasonal item\", \"probe\": \"Is that something they always have, or is it a special item? Does that affect how you feel about the brand?\", \"purpose\": \"Explores whether the association is stable or dependent on promotional activity.\"}], \"satisfaction_condition\": \"We move on when the respondent has named at least one food item and described what makes it memorable or associated with that brand.\"}, {\"q_number\": \"3.2\", \"question\": \"Now thinking about the other fast food brands you mentioned \u2014 can you do the same thing for one or two of them? What food item or meal do you instantly connect with each of those brands?\", \"question_purpose\": \"Extends the food association mapping across multiple brands to build a comparative picture.\", \"probe_depth\": 1, \"probes\": [{\"trigger\": \"When respondent says they cannot think of a specific item for a brand\", \"probe\": \"That's interesting \u2014 what does that tell you about that brand compared to the others?\", \"purpose\": \"Turns a gap in association into a data point about brand distinctiveness and menu communication.\"}], \"satisfaction_condition\": \"We move on when the respondent has attempted food associations for at least two additional brands, even if some associations are weak or absent.\"}]}, {\"section_number\": 4, \"section_title\": \"Health Perceptions\", \"strategic_goal\": \"Understand how consumers evaluate the healthiness of fast food brands and their menus, what signals or cues inform those perceptions, and how health considerations factor into their choices.\", \"phase\": \"deep_dive\", \"estimated_minutes\": 4, \"questions\": [{\"q_number\": \"4.1\", \"question\": \"When it comes to health, how do you think about fast food in general \u2014 is it something you factor in when you're choosing where to eat?\", \"question_purpose\": \"Establishes the respondent's general health orientation toward fast food before probing brand-specific perceptions.\", \"probe_depth\": 1, \"probes\": [{\"trigger\": \"When respondent says health is not a consideration at all\", \"probe\": \"Has there ever been a moment \u2014 maybe after eating fast food \u2014 where you thought about whether it was good or bad for you?\", \"purpose\": \"Surfaces latent health awareness even among respondents who claim indifference.\"}], \"satisfaction_condition\": \"We move on when the respondent has expressed a clear position on whether and how health factors into their fast food decisions.\"}, {\"q_number\": \"4.2\", \"question\": \"Thinking about the brands you mentioned \u2014 if you had to rank them from the one you'd consider healthiest to the least healthy, how would you order them, and what makes you say that?\", \"question_purpose\": \"Generates a comparative health ranking and surfaces the specific cues \u2014 ingredients, menu options, branding, labelling \u2014 that drive health perceptions.\", \"probe_depth\": 2, \"probes\": [{\"trigger\": \"When respondent ranks a brand as healthier than others\", \"probe\": \"What is it about that brand that gives you that impression \u2014 is it something specific on the menu, the way they talk about their food, or something else?\", \"purpose\": \"Identifies the specific health signals \u2014 salads, Healthier Choice labels, grilled options, marketing language \u2014 that drive positive health perception.\"}, {\"trigger\": \"When respondent ranks a brand as least healthy\", \"probe\": \"Does that affect whether you visit them or how often you go?\", \"purpose\": \"Tests whether negative health perception translates into actual behaviour change or is simply a held belief that does not affect purchase.\"}], \"satisfaction_condition\": \"We move on when the respondent has ranked or compared at least two brands on healthiness and explained the reasoning behind at least one of those judgements.\"}]}, {\"section_number\": 5, \"section_title\": \"Value Proposition & Choice Drivers\", \"strategic_goal\": \"Uncover the functional, emotional, and social reasons consumers choose specific fast food brands, including the role of price, taste, convenience, occasion, and brand trust, and identify what would cause them to switch.\", \"phase\": \"deep_dive\", \"estimated_minutes\": 4, \"questions\": [{\"q_number\": \"5.1\", \"question\": \"Think about the last time you chose a specific fast food brand \u2014 can you walk me through that decision? What made you go to that particular place rather than somewhere else?\", \"question_purpose\": \"Uses episodic recall to surface the real decision-making process and the hierarchy of choice drivers in a specific, grounded context.\", \"probe_depth\": 2, \"probes\": [{\"trigger\": \"When respondent cites convenience or proximity as the main reason\", \"probe\": \"If there had been two or three fast food options equally close to you, which would you have picked and why?\", \"purpose\": \"Removes convenience as a confounding factor to reveal underlying brand preference.\"}, {\"trigger\": \"When respondent mentions price or value\", \"probe\": \"What does good value mean to you in this context \u2014 is it purely about the price, or does it include the amount of food, the quality, or something else?\", \"purpose\": \"Unpacks the multi-dimensional nature of value perception beyond simple price sensitivity.\"}], \"satisfaction_condition\": \"We move on when the respondent has described a real decision episode and identified at least two factors that drove their brand choice.\"}, {\"q_number\": \"5.2\", \"question\": \"Is there a fast food brand that you feel genuinely loyal to \u2014 one you keep going back to \u2014 and if so, what keeps you coming back?\", \"question_purpose\": \"Surfaces the emotional and habitual dimensions of brand loyalty beyond transactional reasons.\", \"probe_depth\": 2, \"probes\": [{\"trigger\": \"When respondent expresses strong loyalty to a brand\", \"probe\": \"Has that brand ever let you down \u2014 and if so, did it change how you feel about them?\", \"purpose\": \"Tests the resilience of brand loyalty and reveals the threshold at which trust breaks down.\"}, {\"trigger\": \"When respondent says they are not loyal to any brand\", \"probe\": \"What would a fast food brand need to do or offer to make you feel like you'd always choose them first?\", \"purpose\": \"Reveals the unmet needs or ideal value proposition that no current brand is delivering.\"}], \"satisfaction_condition\": \"We move on when the respondent has either articulated the drivers of their brand loyalty or described what it would take to earn their loyalty.\"}, {\"q_number\": \"5.3\", \"question\": \"What would make you switch away from your usual fast food brand \u2014 what would have to happen, or what would another brand have to offer?\", \"question_purpose\": \"Identifies the switching triggers and competitive vulnerabilities that brands need to defend against.\", \"probe_depth\": 1, \"probes\": [{\"trigger\": \"When respondent mentions a price increase as a switching trigger\", \"probe\": \"How much of a price increase would it take before you'd seriously consider switching \u2014 and where would you go instead?\", \"purpose\": \"Quantifies price elasticity in relative terms and identifies the next-best alternative in the respondent's consideration set.\"}], \"satisfaction_condition\": \"We move on when the respondent has named at least one concrete switching trigger and indicated where they would go instead.\"}]}, {\"section_number\": 6, \"section_title\": \"Closing & Final Reflection\", \"strategic_goal\": \"Capture any unprompted final impressions, give the respondent a chance to surface anything not yet covered, and close the interview positively.\", \"phase\": \"closing\", \"estimated_minutes\": 1, \"questions\": [{\"q_number\": \"6.1\", \"question\": \"We're almost done \u2014 is there anything about fast food in Singapore, or about any of the brands we talked about, that you feel is important but we haven't touched on yet?\", \"question_purpose\": \"Opens a final unprompted window to capture any salient thoughts the respondent has been holding back or that the structured questions did not surface.\", \"probe_depth\": 1, \"probes\": [{\"trigger\": \"When respondent raises a new topic or strong opinion\", \"probe\": \"That's really interesting \u2014 can you tell me a little more about that?\", \"purpose\": \"Gives space to a potentially rich unprompted insight without letting it run too long given time constraints.\"}], \"satisfaction_condition\": \"We close when the respondent has either shared a final thought or confirmed there is nothing more to add.\"}]}], \"brand_registry\": [{\"brand_name\": \"McDonald's\", \"aliases\": [\"McD\", \"Mackers\", \"Mac\", \"McDo\"], \"pronunciation_note\": \"mik-DON-ulds\", \"category\": \"QSR\", \"relevance\": \"Dominant QSR brand in Singapore by outlet count and brand awareness; likely to be top-of-mind for most respondents and a benchmark for comparisons.\"}, {\"brand_name\": \"KFC\", \"aliases\": [\"Kentucky Fried Chicken\", \"Kentucky\"], \"pronunciation_note\": \"Kay-Eff-See\", \"category\": \"QSR\", \"relevance\": \"Major QSR player with strong fried chicken association; relevant to food item association and value proposition questions.\"}, {\"brand_name\": \"Burger King\", \"aliases\": [\"BK\"], \"pronunciation_note\": \"BUR-ger King\", \"category\": \"QSR\", \"relevance\": \"Key competitor to McDonald's in the burger segment; relevant for brand salience and value proposition comparisons.\"}, {\"brand_name\": \"Subway\", \"aliases\": [\"Sub\"], \"pronunciation_note\": \"SUB-way\", \"category\": \"QSR\", \"relevance\": \"Frequently cited as a healthier fast food option; highly relevant to health perception questions and the Healthier Choice positioning.\"}, {\"brand_name\": \"Jollibee\", \"aliases\": [\"Jolly\"], \"pronunciation_note\": \"jol-ee-BEE\", \"category\": \"QSR\", \"relevance\": \"Filipino QSR chain with growing presence in Singapore; relevant to brand awareness and food association questions, particularly among younger consumers.\"}, {\"brand_name\": \"Popeyes\", \"aliases\": [\"Popeye's\"], \"pronunciation_note\": \"POH-peez\", \"category\": \"QSR\", \"relevance\": \"American fried chicken chain with high social media salience in Singapore; relevant to brand awareness and food item association.\"}, {\"brand_name\": \"Texas Chicken\", \"aliases\": [\"Church's Chicken\"], \"pronunciation_note\": \"TEK-sus CHIK-en\", \"category\": \"QSR\", \"relevance\": \"Fried chicken competitor to KFC and Popeyes; relevant to brand salience and food association questions.\"}, {\"brand_name\": \"A&W\", \"aliases\": [\"A and W\"], \"pronunciation_note\": \"Ay-and-DOB-ul-yoo\", \"category\": \"QSR\", \"relevance\": \"Nostalgic brand that returned to Singapore; relevant to brand salience and emotional value proposition questions.\"}, {\"brand_name\": \"Shake Shack\", \"aliases\": [\"Shack\"], \"pronunciation_note\": \"SHAYK Shak\", \"category\": \"casual_dining\", \"relevance\": \"Premium burger brand that may be mentioned by higher-income or younger respondents; relevant to value proposition and health perception questions.\"}, {\"brand_name\": \"Five Guys\", \"aliases\": [], \"pronunciation_note\": \"FYVE Gyz\", \"category\": \"casual_dining\", \"relevance\": \"Premium American burger chain present in Singapore; may be cited in discussions of value and quality trade-offs.\"}, {\"brand_name\": \"GrabFood\", \"aliases\": [\"Grab\"], \"pronunciation_note\": \"GRAB Food\", \"category\": \"delivery\", \"relevance\": \"Leading food delivery platform in Singapore; may be mentioned as a channel through which respondents access fast food brands.\"}, {\"brand_name\": \"foodpanda\", \"aliases\": [\"Panda\"], \"pronunciation_note\": \"FOOD-pan-da\", \"category\": \"delivery\", \"relevance\": \"Major food delivery platform; relevant if respondents discuss ordering fast food via delivery rather than visiting outlets.\"}, {\"brand_name\": \"Deliveroo\", \"aliases\": [\"Roo\"], \"pronunciation_note\": \"DEL-ih-vuh-roo\", \"category\": \"delivery\", \"relevance\": \"Food delivery platform operating in Singapore; may be cited alongside GrabFood and foodpanda in delivery context discussions.\"}, {\"brand_name\": \"Hawker Centre\", \"aliases\": [\"Hawker\", \"Kopitiam\", \"Food Court\"], \"pronunciation_note\": \"HAW-ker SEN-ter\", \"category\": \"hawker\", \"relevance\": \"Singapore's ubiquitous informal dining alternative to fast food; likely to be mentioned as a competitor or substitute in value and occasion discussions.\"}, {\"brand_name\": \"MOS Burger\", \"aliases\": [\"MOS\"], \"pronunciation_note\": \"MOSS BUR-ger\", \"category\": \"QSR\", \"relevance\": \"Japanese QSR burger chain with outlets in Singapore; may be cited by respondents who perceive it as a higher-quality or slightly healthier alternative.\"}]}");
+var SP=JSON.parse("{\"persona\": {\"role\": \"A warm, curious voice interviewer exploring fast food habits with Singapore consumers.\", \"tone\": \"Casual, friendly, and genuinely interested \u2014 like a curious friend, never a robot.\", \"rules\": [\"Speak naturally and conversationally \u2014 no stiff or formal phrasing.\", \"Never read questions verbatim \u2014 rephrase naturally in the moment.\", \"Acknowledge answers briefly before moving on \u2014 'That's interesting' or 'Got it'.\", \"Never suggest answers or lead the respondent toward a specific response.\", \"If a respondent goes quiet, give them two seconds before gently prompting.\", \"Keep energy warm but focused \u2014 don't let tangents run beyond 30 seconds.\", \"Always sound like you're listening, not just waiting to ask the next question.\", \"Stay on time \u2014 20 minutes total, pace yourself across six sections.\"]}, \"research_summary\": \"This study explores how Singapore consumers aged 18\u201345 think about fast food brands \u2014 which come to mind first, what food items they associate with each, how healthy they perceive them to be, and what drives their choices. The goal is to map brand salience, food associations, health perceptions, and value drivers across the competitive QSR landscape in Singapore.\", \"audience_note\": \"Respondents are Singapore residents aged 18\u201345 who eat fast food at least once a month and have visited at least two different brands in the past three months. They range from convenience-driven to experience-seeking, and represent a mix of income levels, life stages, and dining motivations.\", \"sections\": [{\"section_number\": 1, \"title\": \"WELCOME & WARM-UP\", \"duration_min\": 3, \"questions\": [{\"q_number\": \"1.1\", \"instruction\": \"Ask them how they typically handle meals on a busy day in Singapore \u2014 where they tend to eat and what kinds of food they go for.\", \"probes\": [\"IF respondent mentions a specific meal like lunch or dinner THEN ask what usually drives where they end up eating at that meal.\", \"IF respondent only mentions one type of food THEN ask whether that changes depending on the day or how they're feeling.\"], \"move_on\": \"Move on when: respondent has described at least one typical meal scenario and one factor influencing their food choices.\"}, {\"q_number\": \"1.2\", \"instruction\": \"Ask how often fast food features in their week and what usually prompts them to go for it.\", \"probes\": [\"IF respondent gives a vague answer like 'when I'm lazy' THEN ask them to walk through the last time that actually happened.\", \"IF respondent mentions delivery THEN ask whether they think of that differently from going to an outlet in person.\"], \"move_on\": \"Move on when: respondent has given a rough frequency and at least one motivational trigger for choosing fast food.\"}]}, {\"section_number\": 2, \"title\": \"BRAND AWARENESS & SALIENCE\", \"duration_min\": 4, \"questions\": [{\"q_number\": \"2.1\", \"instruction\": \"Ask them to name whichever fast food brands come to mind first when they think about fast food in Singapore \u2014 no right or wrong answers.\", \"probes\": [\"IF respondent names only one or two brands and stops THEN ask if any others come to mind, even ones they visit less often.\", \"IF respondent names a brand THEN ask what made that one come to mind first.\", \"IF respondent hesitates THEN reassure them there are no wrong answers and ask what they'd think of if they were hungry right now.\"], \"move_on\": \"Move on when: respondent has named at least three brands and explained why at least one came to mind first.\"}, {\"q_number\": \"2.2\", \"instruction\": \"Ask which of the brands they just mentioned they think about most often when deciding where to eat, and why that one stands out.\", \"probes\": [\"IF respondent says a brand is top of mind mainly because it's nearby THEN ask if there's anything about the brand itself \u2014 beyond location \u2014 that keeps it front of mind.\", \"IF respondent struggles to pick one THEN ask which brand they'd least want to disappear from Singapore.\"], \"move_on\": \"Move on when: respondent has identified a top brand and given at least one reason for its mental dominance.\"}]}, {\"section_number\": 3, \"title\": \"FOOD ITEM ASSOCIATIONS\", \"duration_min\": 4, \"questions\": [{\"q_number\": \"3.1\", \"instruction\": \"Ask them to picture the brand they mentioned most \u2014 and say what food or drink item comes to mind immediately when they think of it.\", \"probes\": [\"IF respondent names a food item THEN ask what it is about that item specifically \u2014 taste, look, smell, or something else.\", \"IF respondent mentions a limited-time or seasonal item THEN ask whether that affects how they feel about the brand overall.\", \"IF respondent struggles to picture anything THEN ask what they'd most likely order if they walked in right now.\"], \"move_on\": \"Move on when: respondent has named at least one food item and described what makes it memorable or tied to that brand.\"}, {\"q_number\": \"3.2\", \"instruction\": \"Ask them to do the same for one or two of the other brands they mentioned \u2014 what food item or meal do they instantly connect with each?\", \"probes\": [\"IF respondent cannot think of a specific item for a brand THEN ask what that gap tells them about that brand compared to the others.\", \"IF respondent gives identical associations across brands THEN ask if any brand has something truly unique that no other brand has.\"], \"move_on\": \"Move on when: respondent has attempted food associations for at least two additional brands.\"}]}, {\"section_number\": 4, \"title\": \"HEALTH PERCEPTIONS\", \"duration_min\": 4, \"questions\": [{\"q_number\": \"4.1\", \"instruction\": \"Ask how they think about health when it comes to fast food \u2014 whether it's something they factor in when choosing where to eat.\", \"probes\": [\"IF respondent says health is not a consideration THEN ask if there's ever been a moment after eating fast food where they thought about whether it was good or bad for them.\", \"IF respondent says they try to eat healthy THEN ask how that plays out when they're actually choosing fast food.\"], \"move_on\": \"Move on when: respondent has expressed a clear position on whether and how health factors into their fast food decisions.\"}, {\"q_number\": \"4.2\", \"instruction\": \"Ask them to rank the brands they mentioned from healthiest to least healthy, and explain what's driving that order.\", \"probes\": [\"IF respondent ranks a brand as healthier THEN ask what specifically gives them that impression \u2014 menu items, labelling, marketing, or something else.\", \"IF respondent ranks a brand as least healthy THEN ask whether that actually affects how often they visit.\", \"IF respondent mentions Healthier Choice labels or government health schemes THEN ask how much that labelling actually influences what they order.\"], \"move_on\": \"Move on when: respondent has compared at least two brands on healthiness and explained the reasoning behind at least one judgement.\"}]}, {\"section_number\": 5, \"title\": \"VALUE PROPOSITION & CHOICE DRIVERS\", \"duration_min\": 4, \"questions\": [{\"q_number\": \"5.1\", \"instruction\": \"Ask them to walk through the last time they chose a specific fast food brand \u2014 what made them go there rather than somewhere else.\", \"probes\": [\"IF respondent cites convenience as the main reason THEN ask which brand they'd pick if two or three options were equally close.\", \"IF respondent mentions price or value THEN ask what good value means to them \u2014 is it just price, or does quality and portion size factor in.\", \"IF respondent mentions a promotion or app deal THEN ask whether they would have gone there anyway without the deal.\"], \"move_on\": \"Move on when: respondent has described a real decision episode and named at least two factors that drove their choice.\"}, {\"q_number\": \"5.2\", \"instruction\": \"Ask whether there's a fast food brand they feel genuinely loyal to, and what keeps them coming back.\", \"probes\": [\"IF respondent expresses strong loyalty THEN ask if that brand has ever let them down and whether it changed how they feel.\", \"IF respondent says they're not loyal to any brand THEN ask what a brand would need to do to earn their consistent loyalty.\"], \"move_on\": \"Move on when: respondent has articulated loyalty drivers or described what it would take to earn their loyalty.\"}, {\"q_number\": \"5.3\", \"instruction\": \"Ask what would make them switch away from their usual fast food brand \u2014 what would have to happen, or what would another brand need to offer.\", \"probes\": [\"IF respondent mentions a price increase THEN ask roughly how much of an increase it would take before they'd seriously consider switching, and where they'd go instead.\", \"IF respondent says nothing would make them switch THEN ask if a competitor launched something truly exciting, whether that would tempt them.\"], \"move_on\": \"Move on when: respondent has named at least one concrete switching trigger and indicated where they'd go instead.\"}]}, {\"section_number\": 6, \"title\": \"CLOSING & FINAL REFLECTION\", \"duration_min\": 1, \"questions\": [{\"q_number\": \"6.1\", \"instruction\": \"Ask if there's anything about fast food in Singapore, or any of the brands discussed, that feels important but hasn't come up yet.\", \"probes\": [\"IF respondent raises a new topic or strong opinion THEN ask them to say a little more about it.\", \"IF respondent says nothing comes to mind THEN thank them warmly and close the interview.\"], \"move_on\": \"Move on when: respondent has shared a final thought or confirmed there's nothing more to add.\"}]}], \"brand_registry\": [\"McDonald's | McD, Mackers, Mac, McDo | mik-DON-ulds\", \"KFC | Kentucky Fried Chicken, Kentucky | Kay-Eff-See\", \"Burger King | BK | BUR-ger King\", \"Subway | Sub | SUB-way\", \"Jollibee | Jolly | jol-ee-BEE\", \"Popeyes | Popeye's | POH-peez\", \"Texas Chicken | Church's Chicken | TEK-sus CHIK-en\", \"A&W | A and W | Ay-and-DOB-ul-yoo\", \"Shake Shack | Shack | SHAYK Shak\", \"Five Guys |  | FYVE Gyz\", \"GrabFood | Grab | GRAB Food\", \"foodpanda | Panda | FOOD-pan-da\", \"Deliveroo | Roo | DEL-ih-vuh-roo\", \"Hawker Centre | Hawker, Kopitiam, Food Court | HAW-ker SEN-ter\", \"MOS Burger | MOS | MOSS BUR-ger\"], \"core_rules\": [\"Never suggest brand names or food items \u2014 all recall must be fully spontaneous.\", \"Probe once or twice per answer maximum \u2014 never interrogate or repeat the same probe.\", \"If a tangent runs past 30 seconds, acknowledge it briefly and redirect to the next question.\", \"Allow up to two seconds of silence before prompting \u2014 don't rush the respondent.\", \"Never confirm whether an answer is correct, good, or what you expected.\", \"Track time actively \u2014 if running long, compress probing depth in sections 5 and 6.\", \"Never ask two questions in the same turn \u2014 one question at a time, always.\"]}");
+var BRIEF="We want to understand the fast food industry in Singapore from the consumer perspective.\n\nKey research questions:\n1. Who are the key players in the mind of consumers?\n2. What key food items do consumers associate with each brand?\n3. How healthy do consumers perceive the offerings?\n4. What is the value proposition of each brand?\n\nResearch type: Consumer UX / Insights\nInterview length: 20 minutes\nTarget: Singapore residents aged 18\u201345 who eat fast food at least once a month";
+var CLAUDE_SYS="You are a senior qualitative research strategist. You transform researcher briefs into structured outputs for AI voice interviews. Return valid JSON only.";
+var AUTHOR_SYS="You are an expert AI voice interview prompt engineer. You write tight system prompts for Gemini voice agents. Return valid JSON only. No markdown.";
+
+// ── STATE ──
+var currentStep=1;
+var currentSubPanel=null;
+var briefGenerated=false;
+
+// ── UTILITIES ──
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function getKey(){return document.getElementById('apiKeyInput').value.trim()}
+function updateApiStatus(){
+  var k=getKey(),el=document.getElementById('apiStatus');
+  if(k.startsWith('sk-ant-')&&k.length>20){el.textContent='Ready ✓';el.className='intake-api-status ok'}
+  else if(k.length>0){el.textContent='Check format';el.className='intake-api-status'}
+  else{el.textContent='Not set';el.className='intake-api-status'}
+}
+async function callClaude(sys,msg,maxT){
+  maxT=maxT||4096;
+  var k=getKey();
+  if(!k)throw new Error('No API key');
+  // Strip any non-ASCII chars that break HTTP headers (e.g. smart quotes accidentally copied with the key)
+  k=k.replace(/[^\x20-\x7E]/g,'').trim();
+  if(!k)throw new Error('API key contains invalid characters — please re-paste it from console.anthropic.com');
+  var r;
+  try{
+    r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:maxT,temperature:0.25,system:sys,messages:[{role:'user',content:msg}]})});
+  }catch(netErr){
+    throw new Error('Network error — check your internet connection. Detail: '+netErr.message);
+  }
+  if(!r.ok){
+    var e=await r.json().catch(function(){return{}});
+    var msg2=(e.error&&e.error.message)||('HTTP '+r.status);
+    throw new Error('API error ('+r.status+'): '+msg2);
+  }
+  var txt=(await r.json()).content[0].text.trim();
+  if(txt.startsWith('```')){txt=txt.split('\n').slice(1).join('\n').replace(/```\s*$/,'')}
+  return txt
+}
+function showToast(msg,err){var t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' error':'');setTimeout(function(){t.className='toast'},3200)}
+
+// ── STEP INDICATOR ──
+function updateStepIndicator(){
+  for(var i=1;i<=3;i++){
+    var el=document.getElementById('si-'+i);
+    var circle=el.querySelector('.si-circle');
+    el.classList.remove('active','completed','clickable');
+    if(i<currentStep){
+      el.classList.add('completed');
+      circle.textContent='\u2713';
+      if(briefGenerated){el.classList.add('clickable');(function(n){el.onclick=function(){goToStep(n)}})(i)}
+    } else if(i===currentStep){
+      el.classList.add('active');
+      circle.textContent=String(i);
+      el.onclick=null;
+    } else {
+      circle.textContent=String(i);
+      if(briefGenerated){el.classList.add('clickable');(function(n){el.onclick=function(){goToStep(n)}})(i)}
+      else{el.onclick=function(){showToast('Generate a brief first to unlock this step',true)}}
+    }
+  }
+}
+
+// ── STEP NAVIGATION ──
+function goToStep(n){
+  if(n>1&&!briefGenerated){showToast('Generate a brief first to unlock this step',true);return}
+  document.querySelectorAll('.wizard-step').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('wizard-step-'+n).classList.add('active');
+  currentStep=n;
+  updateStepIndicator();
+  if(n===2){updateOverviewCards();backToOverview()}
+  if(n===3){renderSysPrompt()}
+  document.querySelector('.wizard-content').scrollTop=0;
+}
+
+// ── OVERVIEW CARDS ──
+function updateOverviewCards(){
+  // Research Objectives
+  var objs=DATA.research_objectives||[];
+  var objPreview=objs.length>0?objs[0].title:'No objectives yet';
+  var primaryCount=objs.filter(function(o){return o.priority==='primary'}).length;
+  var objMeta=objs.length+' objective'+(objs.length!==1?'s':'')+' \u00b7 '+primaryCount+' primary';
+  document.getElementById('ov-obj-preview').textContent=objPreview;
+  document.getElementById('ov-obj-meta').textContent=objMeta;
+
+  // Topic Guide
+  var guide=DATA.topic_guide||[];
+  var totalQ=guide.reduce(function(s,sec){return s+sec.questions.length},0);
+  var guidePreview=guide.length>0?guide[0].section_title:'No sections yet';
+  var guideMeta=guide.length+' section'+(guide.length!==1?'s':'')+' \u00b7 '+totalQ+' question'+(totalQ!==1?'s':'');
+  document.getElementById('ov-guide-preview').textContent=guidePreview;
+  document.getElementById('ov-guide-meta').textContent=guideMeta;
+
+  // Brands
+  var brands=DATA.brand_registry||[];
+  var brandsPreview=brands.length+' brand'+(brands.length!==1?'s':'')+' registered';
+  var qsrCount=brands.filter(function(b){return b.category==='QSR'}).length;
+  var brandsMeta='QSR, delivery, casual dining & hawker';
+  document.getElementById('ov-brands-preview').textContent=brandsPreview;
+  document.getElementById('ov-brands-meta').textContent=brandsMeta;
+  var tagsEl=document.getElementById('ov-brands-tags');
+  tagsEl.innerHTML='';
+  brands.slice(0,4).forEach(function(b){
+    var tag=document.createElement('span');tag.className='overview-tag';tag.textContent=b.brand_name;tagsEl.appendChild(tag);
+  });
+  if(brands.length>4){var more=document.createElement('span');more.className='overview-tag';more.textContent='+' +(brands.length-4)+' more';tagsEl.appendChild(more)}
+
+  // Target Audience
+  var ta=DATA.target_audience||{};
+  var demo=ta.demographics||{};
+  var audPreview=demo.age_range?'Ages '+demo.age_range+(demo.location?' \u00b7 '+demo.location:''):'No audience defined';
+  var audSummary=ta.summary||'';
+  var audMeta=audSummary.length>90?audSummary.substring(0,90)+'\u2026':audSummary;
+  document.getElementById('ov-aud-preview').textContent=audPreview;
+  document.getElementById('ov-aud-meta').textContent=audMeta;
+  var audTagsEl=document.getElementById('ov-aud-tags');
+  audTagsEl.innerHTML='';
+  var psycho=ta.psychographics||[];
+  psycho.slice(0,3).forEach(function(p){
+    var tag=document.createElement('span');tag.className='overview-tag';
+    tag.textContent=p.length>32?p.substring(0,32)+'\u2026':p;audTagsEl.appendChild(tag);
+  });
+}
+
+// ── SUB-PANEL NAVIGATION ──
+function showSubPanel(name){
+  document.querySelectorAll('#wizard-step-2 .sub-panel').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('sub-'+name).classList.add('active');
+  currentSubPanel=name;
+  if(name==='objectives')renderObjectives();
+  if(name==='audience')renderAudience();
+  if(name==='guide')renderGuide();
+  if(name==='brands')renderBrands();
+  document.querySelector('.wizard-content').scrollTop=0;
+}
+
+function backToOverview(){
+  document.querySelectorAll('#wizard-step-2 .sub-panel').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('overview-panel').classList.add('active');
+  currentSubPanel=null;
+  updateOverviewCards();
+  document.querySelector('.wizard-content').scrollTop=0;
+}
+
+// ── GENERATE FROM BRIEF ──
+async function generateFromBrief(){
+  var brief=document.getElementById('briefTextarea').value.trim();
+  if(!brief||brief.length<30){showToast('Please enter a brief first',true);return}
+  if(!getKey()){showToast('Add your API key first',true);return}
+  var btn=document.getElementById('generateBtn');
+  btn.disabled=true;btn.textContent='Generating\u2026';
+  document.getElementById('intakeGenerating').classList.add('visible');
+  BRIEF=brief;
+  var prompt='Given this research brief:\n\n'+brief+'\n\nGenerate a complete structured research design. Return ONLY this JSON object with no markdown, no explanation:\n{\n  "research_objectives": [{"id":"RO1","title":"...","objective":"...","why_it_matters":"...","priority":"primary|secondary","success_criteria":"..."}],\n  "target_audience": {"summary":"...","demographics":{"age_range":"","gender":"","location":"","income":"","education":""},"psychographics":["..."],"professional_context":"...","behavioral_criteria":["..."],"exclusion_criteria":["..."],"screening_questions":[{"question":"...","acceptable_answers":["..."],"disqualifying_answers":["..."]}]},\n  "topic_guide": [{"section_number":1,"section_title":"...","strategic_goal":"...","phase":"warmup|exploration|deep_dive|closing","estimated_minutes":3,"questions":[{"q_number":"1.1","question":"...","question_purpose":"...","probe_depth":1,"probes":[{"trigger":"...","probe":"...","purpose":"..."}],"satisfaction_condition":"..."}]}],\n  "brand_registry": [{"brand_name":"...","aliases":["..."],"pronunciation_note":"...","category":"QSR|casual_dining|hawker|delivery|other","relevance":"..."}]\n}';
+  try{
+    var result=await callClaude(CLAUDE_SYS,prompt,8192);
+    var parsed=JSON.parse(result);
+    if(!parsed.research_objectives||!parsed.target_audience||!parsed.topic_guide||!parsed.brand_registry){throw new Error('Incomplete response — missing required fields')}
+    DATA=parsed;
+    briefGenerated=true;
+    var studyName=brief.split('\n')[0].trim().substring(0,55);
+    if(studyName)document.getElementById('topbar-study-name').textContent=studyName;
+    showToast('Research design generated!');
+    goToStep(2);
+  }catch(e){
+    showToast('Error: '+e.message,true);
+    btn.disabled=false;btn.textContent='Generate Research Design \u2192';
+    document.getElementById('intakeGenerating').classList.remove('visible');
+  }
+}
+
+// ── GENERATE SYSTEM PROMPT & ADVANCE ──
+async function generateSysPromptAndAdvance(){
+  if(!getKey()){showToast('Add your API key first',true);return}
+  // If SP already has content (demo mode with pre-loaded data), just advance
+  if(!briefGenerated&&SP.sections&&SP.sections.length>0){goToStep(3);return}
+  var btn=document.getElementById('genSPBtn');
+  btn.disabled=true;btn.textContent='Generating System Prompt\u2026';
+  var prompt='Given this research brief and structured data:\n\nBRIEF:\n'+BRIEF+'\n\nDATA:\n'+JSON.stringify(DATA)+'\n\nGenerate a complete Gemini voice agent system prompt. Return ONLY this JSON object with no markdown:\n{\n  "persona":{"role":"...","tone":"...","rules":["..."]},\n  "research_summary":"...",\n  "audience_note":"...",\n  "sections":[{"section_number":1,"title":"SECTION TITLE","duration_min":3,"questions":[{"q_number":"1.1","instruction":"...","probes":["IF ... THEN ..."],"move_on":"Move on when: ..."}]}],\n  "brand_registry":["Brand | aliases | pronunciation"],\n  "core_rules":["..."]\n}';
+  try{
+    var result=await callClaude(AUTHOR_SYS,prompt,8192);
+    var parsed=JSON.parse(result);
+    if(!parsed.persona||!parsed.sections){throw new Error('Incomplete system prompt response')}
+    SP=parsed;
+    showToast('System prompt generated!');
+    goToStep(3);
+  }catch(e){
+    showToast('Error: '+e.message,true);
+    btn.disabled=false;btn.textContent='Generate System Prompt \u2192';
+  }
+}
+
+// ── REGEN HELPERS ──
+function mkToolbar(ph,onR){
+  var w=document.createElement('div');w.className='regen-toolbar';
+  var row=document.createElement('div');row.className='regen-row';
+  var ta=document.createElement('textarea');ta.className='regen-ta';ta.placeholder=ph;
+  var btn=document.createElement('button');btn.className='btn btn-primary';btn.textContent='Regenerate';
+  btn.onclick=function(){onR(ta.value.trim(),btn)};
+  var hint=document.createElement('div');hint.className='regen-hint';hint.textContent='Hover to reveal \u00b7 Leave blank for a quality pass';
+  row.appendChild(ta);row.appendChild(btn);w.appendChild(row);w.appendChild(hint);
+  return w
+}
+function setLoading(el,on){
+  var o=el.querySelector('.loading-overlay');
+  if(on){if(!o){o=document.createElement('div');o.className='loading-overlay';o.innerHTML='<div class="spinner"></div> Regenerating\u2026';el.style.position='relative';el.appendChild(o)}}
+  else if(o)o.remove();
+}
+
+// ── RENDER: OBJECTIVES ──
+function renderObjectives(){
+  var el=document.getElementById('panel-objectives');
+  el.innerHTML='';
+  DATA.research_objectives.forEach(function(obj,idx){
+    var sec=document.createElement('div');sec.className='regen-section';
+    var badge=obj.priority==='primary'?'<span class="pill pill-purple">Primary</span>':'<span class="pill pill-orange">Secondary</span>';
+    var card=document.createElement('div');card.className='card';
+    card.innerHTML='<div class="card-header"><span class="card-id">'+esc(obj.id)+'</span><div><div class="card-title">'+esc(obj.title)+'&nbsp;&nbsp;'+badge+'</div></div></div>'
+      +'<div class="field-label">Objective</div><div class="field-value">'+esc(obj.objective)+'</div>'
+      +'<div class="field-label">Why It Matters</div><div class="field-value">'+esc(obj.why_it_matters)+'</div>'
+      +'<div class="field-label">Success Criteria</div><div class="field-value">'+esc(obj.success_criteria)+'</div>';
+    var tb=mkToolbar('e.g. "focus on emotional connection"',function(fb,btn){
+      if(!getKey()){showToast('Add API key first',true);return}
+      btn.disabled=true;setLoading(card,true);
+      callClaude(CLAUDE_SYS,'Brief:\n'+BRIEF+'\nCurrent: '+JSON.stringify(obj)+'\nAll: '+JSON.stringify(DATA.research_objectives)+'\nFeedback: '+(fb||'Improve quality')+'\nReturn JSON array with ONE object: [{"id":"...","title":"...","objective":"...","why_it_matters":"...","priority":"primary|secondary","success_criteria":"..."}]')
+      .then(function(r){DATA.research_objectives[idx]=JSON.parse(r)[0];renderObjectives();showToast('Updated')})
+      .catch(function(e){showToast(e.message,true);setLoading(card,false);btn.disabled=false});
+    });
+    sec.appendChild(card);sec.appendChild(tb);el.appendChild(sec);
+  });
+}
+
+// ── RENDER: AUDIENCE ──
+function renderAudience(){
+  var el=document.getElementById('panel-audience');
+  el.innerHTML='';
+  var ta=DATA.target_audience,d=ta.demographics;
+  var sec=document.createElement('div');sec.className='regen-section';
+  var container=document.createElement('div');
+  var psycho=ta.psychographics.map(function(p){return'<span class="tag">'+esc(p)+'</span>'}).join('');
+  var behav=ta.behavioral_criteria.map(function(b){return'<span class="tag">'+esc(b)+'</span>'}).join('');
+  var excl=ta.exclusion_criteria.map(function(e){return'<span class="tag exclude">'+esc(e)+'</span>'}).join('');
+  var screenQs=ta.screening_questions.map(function(q,i){
+    var ok=q.acceptable_answers.map(function(a){return'<span class="ans-tag ans-ok">'+esc(a)+'</span>'}).join('');
+    var dq=q.disqualifying_answers.map(function(a){return'<span class="ans-tag ans-dq">'+esc(a)+'</span>'}).join('');
+    return'<div class="screening-q"><div class="q-text">Q'+(i+1)+'. '+esc(q.question)+'</div>'
+      +'<div class="ans-row"><strong style="font-size:10px;color:var(--green-dark);margin-right:3px">PASS:</strong>'+ok+'</div>'
+      +'<div class="ans-row"><strong style="font-size:10px;color:var(--red);margin-right:3px">DQ:</strong>'+dq+'</div></div>';
+  }).join('');
+  container.innerHTML='<div class="card"><div class="field-label">Summary</div><div class="field-value" style="font-size:14px;font-weight:600">'+esc(ta.summary)+'</div></div>'
+    +'<div class="card"><div class="card-title" style="margin-bottom:8px;font-size:14px">Demographics</div><div class="demo-grid">'
+    +'<div class="demo-cell"><div class="label">Age</div><div class="value">'+esc(d.age_range)+'</div></div>'
+    +'<div class="demo-cell"><div class="label">Gender</div><div class="value">'+esc(d.gender)+'</div></div>'
+    +'<div class="demo-cell"><div class="label">Location</div><div class="value">'+esc(d.location)+'</div></div>'
+    +'<div class="demo-cell"><div class="label">Income</div><div class="value">'+esc(d.income)+'</div></div>'
+    +'<div class="demo-cell"><div class="label">Education</div><div class="value">'+esc(d.education)+'</div></div></div></div>'
+    +'<div class="card"><div class="card-title" style="margin-bottom:7px;font-size:14px">Psychographics</div>'+psycho+'</div>'
+    +'<div class="card"><div class="card-title" style="margin-bottom:7px;font-size:14px">Behavioural Criteria</div>'+behav+'</div>'
+    +'<div class="card"><div class="card-title" style="margin-bottom:7px;font-size:14px">Exclusion Criteria</div>'+excl+'</div>'
+    +'<div class="card"><div class="card-title" style="margin-bottom:8px;font-size:14px">Screening Questions</div>'+screenQs+'</div>';
+  var tb=mkToolbar('e.g. "focus on heavy users"',function(fb,btn){
+    if(!getKey()){showToast('Add API key first',true);return}
+    btn.disabled=true;setLoading(container,true);
+    callClaude(CLAUDE_SYS,'Brief:\n'+BRIEF+'\nCurrent: '+JSON.stringify(ta)+'\nFeedback: '+(fb||'Improve quality')+'\nReturn ONLY JSON: {"summary":"...","demographics":{"age_range":"","gender":"","location":"","income":"","education":""},"psychographics":["..."],"professional_context":"","behavioral_criteria":["..."],"exclusion_criteria":["..."],"screening_questions":[{"question":"...","acceptable_answers":["..."],"disqualifying_answers":["..."]}]}')
+    .then(function(r){DATA.target_audience=JSON.parse(r);renderAudience();showToast('Updated')})
+    .catch(function(e){showToast(e.message,true);setLoading(container,false);btn.disabled=false});
+  });
+  sec.appendChild(container);sec.appendChild(tb);el.appendChild(sec);
+}
+
+// ── RENDER: TOPIC GUIDE ──
+function renderGuide(){
+  var el=document.getElementById('panel-guide');
+  el.innerHTML='';
+  DATA.topic_guide.forEach(function(sec,secIdx){
+    var wrap=document.createElement('div');wrap.className='regen-section';
+    var card=document.createElement('div');card.className='tg-section';
+    var phase=sec.phase.replace('_',' ');
+    var phaseClass='pill-purple';
+    if(sec.phase==='warmup')phaseClass='pill-orange';
+    if(sec.phase==='closing')phaseClass='pill-green';
+    var hdrEl=document.createElement('div');hdrEl.className='tg-sec-hdr';
+    hdrEl.innerHTML='<div class="tg-sec-hdr-left"><span class="pill '+phaseClass+'">'+phase+'</span><span style="font-size:14px;font-weight:700">S'+sec.section_number+' &mdash; '+esc(sec.section_title)+'</span></div>'
+      +'<span class="pill pill-green">~'+sec.estimated_minutes+' min</span>';
+    card.appendChild(hdrEl);
+    var goalEl=document.createElement('div');goalEl.className='tg-sec-goal';
+    goalEl.innerHTML='<strong>Goal:</strong> '+esc(sec.strategic_goal);
+    card.appendChild(goalEl);
+    sec.questions.forEach(function(q,qIdx){
+      var qDiv=document.createElement('div');qDiv.className='tg-q';
+      var delQ=document.createElement('button');delQ.className='del-btn';delQ.innerHTML='&#10005;';delQ.title='Remove question';
+      delQ.onclick=function(e){e.stopPropagation();if(confirm('Delete question '+q.q_number+'?')){sec.questions.splice(qIdx,1);renderGuide();showToast('Question removed')}};
+      qDiv.appendChild(delQ);
+      var dots=[1,2,3].map(function(i){return'<span class="tg-depth-dot'+(i<=q.probe_depth?' active':'')+'"></span>'}).join('');
+      qDiv.innerHTML+='<div class="tg-q-top"><span class="pill pill-purple" style="flex-shrink:0">'+esc(q.q_number)+'</span><div class="tg-q-text">'+esc(q.question)+'</div><div class="tg-depth">'+dots+'</div></div>';
+      qDiv.innerHTML+='<div class="tg-q-purpose">'+esc(q.question_purpose)+'</div>';
+      if(q.probes&&q.probes.length){
+        var probesDiv=document.createElement('div');probesDiv.className='tg-probes';
+        q.probes.forEach(function(p,pIdx){
+          var pDiv=document.createElement('div');pDiv.className='tg-probe';
+          var delP=document.createElement('button');delP.className='del-btn';delP.innerHTML='&#10005;';delP.title='Remove probe';
+          delP.onclick=function(e){e.stopPropagation();q.probes.splice(pIdx,1);renderGuide();showToast('Probe removed')};
+          pDiv.appendChild(delP);
+          pDiv.innerHTML+='<div style="flex:1"><div class="tg-probe-trigger">'+esc(p.trigger)+'</div><div class="tg-probe-text">&ldquo;'+esc(p.probe)+'&rdquo;</div><div class="tg-probe-purpose">'+esc(p.purpose)+'</div></div>';
+          probesDiv.appendChild(pDiv);
+        });
+        qDiv.appendChild(probesDiv);
+      }
+      var sat=document.createElement('div');
+      sat.innerHTML='<div class="tg-satisfaction">&#10003; '+esc(q.satisfaction_condition)+'</div>';
+      qDiv.appendChild(sat.firstChild);
+      card.appendChild(qDiv);
+    });
+    var tb=mkToolbar('e.g. "add a question about delivery habits"',function(fb,btn){
+      if(!getKey()){showToast('Add API key first',true);return}
+      btn.disabled=true;setLoading(card,true);
+      var schema='Return ONLY JSON: {"section_number":'+sec.section_number+',"section_title":"...","strategic_goal":"...","phase":"'+sec.phase+'","estimated_minutes":'+sec.estimated_minutes+',"questions":[{"q_number":"...","question":"...","question_purpose":"...","probe_depth":1,"probes":[{"trigger":"...","probe":"...","purpose":"..."}],"satisfaction_condition":"..."}]}';
+      callClaude(CLAUDE_SYS,'Brief:\n'+BRIEF+'\nObjectives: '+JSON.stringify(DATA.research_objectives)+'\nCurrent section: '+JSON.stringify(sec)+'\nFeedback: '+(fb||'Improve quality')+'\n'+schema)
+      .then(function(r){DATA.topic_guide[secIdx]=JSON.parse(r);renderGuide();showToast('Section '+sec.section_number+' updated')})
+      .catch(function(e){showToast(e.message,true);setLoading(card,false);btn.disabled=false});
+    });
+    wrap.appendChild(card);wrap.appendChild(tb);el.appendChild(wrap);
+  });
+}
+
+// ── RENDER: BRANDS ──
+function renderBrands(){
+  var el=document.getElementById('panel-brands');
+  el.innerHTML='';
+  var sec=document.createElement('div');sec.className='regen-section';
+  var grid=document.createElement('div');grid.className='brands-grid';
+  DATA.brand_registry.forEach(function(b){
+    var aliases=b.aliases&&b.aliases.length?b.aliases.map(function(a){return'<span class="tag" style="font-size:10px">'+esc(a)+'</span>'}).join(''):'<span style="color:var(--muted);font-size:11px">\u2014</span>';
+    var bc=document.createElement('div');bc.className='brand-card';
+    bc.innerHTML='<div class="brand-name">'+esc(b.brand_name)+'</div>'
+      +'<span class="brand-cat cat-'+b.category+'">'+b.category.replace('_',' ')+'</span>'
+      +'<div class="brand-pronunciation">/'+esc(b.pronunciation_note)+'/ </div>'
+      +'<div style="margin-bottom:6px">'+aliases+'</div>'
+      +'<div class="brand-relevance">'+esc(b.relevance)+'</div>';
+    grid.appendChild(bc);
+  });
+  var tb=mkToolbar('e.g. "add Nene Chicken, 4Fingers"',function(fb,btn){
+    if(!getKey()){showToast('Add API key first',true);return}
+    btn.disabled=true;setLoading(grid,true);
+    callClaude(CLAUDE_SYS,'Brief:\n'+BRIEF+'\nCurrent: '+JSON.stringify(DATA.brand_registry)+'\nFeedback: '+(fb||'Improve and expand')+'\nReturn ONLY JSON array: [{"brand_name":"...","aliases":["..."],"pronunciation_note":"...","category":"QSR|casual_dining|hawker|delivery|other","relevance":"..."}]')
+    .then(function(r){DATA.brand_registry=JSON.parse(r);renderBrands();showToast('Updated')})
+    .catch(function(e){showToast(e.message,true);setLoading(grid,false);btn.disabled=false});
+  });
+  sec.appendChild(grid);sec.appendChild(tb);el.appendChild(sec);
+}
+
+// ── RENDER: SYSTEM PROMPT ──
+function buildRawPrompt(){
+  var out='ROLE\n'+SP.persona.role+'\n\nTONE\n'+SP.persona.tone+'\n\nPERSONA RULES\n';
+  out+=SP.persona.rules.map(function(r){return'- '+r}).join('\n');
+  out+='\n\nSTUDY CONTEXT\n'+SP.research_summary;
+  out+='\n\nAUDIENCE\n'+SP.audience_note+'\n\nINTERVIEW STRUCTURE\n';
+  SP.sections.forEach(function(sec){
+    out+='\n'+sec.title+' (~'+sec.duration_min+' min)\n';
+    sec.questions.forEach(function(q){
+      out+='\n'+q.q_number+'. '+q.instruction+'\n';
+      q.probes.forEach(function(p){out+='   '+p+'\n'});
+      out+='   '+q.move_on+'\n';
+    });
+  });
+  out+='\nBRAND REGISTRY\n';
+  SP.brand_registry.forEach(function(b){out+=b+'\n'});
+  out+='\nCORE RULES\n';
+  SP.core_rules.forEach(function(r){out+='- '+r+'\n'});
+  return out
+}
+
+function mkSpSection(container,label,bodyHtml,tbPh,onRegen){
+  var wrap=document.createElement('div');wrap.className='regen-section';
+  var card=document.createElement('div');card.className='sp-section';
+  card.innerHTML='<div class="sp-sec-hdr"><span class="sp-sec-label">'+esc(label)+'</span></div>'+bodyHtml;
+  var tb=mkToolbar(tbPh,function(fb,btn){
+    if(!getKey()){showToast('Add API key first',true);return}
+    btn.disabled=true;setLoading(card,true);
+    Promise.resolve().then(function(){return onRegen(fb,btn,card)})
+    .catch(function(e){showToast(e.message,true);setLoading(card,false);btn.disabled=false});
+  });
+  wrap.appendChild(card);wrap.appendChild(tb);container.appendChild(wrap);
+}
+
+function renderSysPrompt(){
+  var el=document.getElementById('panel-sysprompt');
+  el.innerHTML='';
+  var rawTxt=buildRawPrompt();var chars=rawTxt.length;
+
+  // Update stats bar (outside panel-sysprompt)
+  var statsEl=document.getElementById('sp-stats-bar');
+  if(statsEl){
+    statsEl.innerHTML='<div class="sp-stat-item"><strong>'+chars.toLocaleString()+'</strong> chars</div>'
+      +'<div class="sp-stat-item"><strong>'+SP.sections.length+'</strong> sections</div>'
+      +'<div class="sp-stat-item"><strong>'+SP.sections.reduce(function(n,s){return n+s.questions.length},0)+'</strong> questions</div>';
+  }
+
+  mkSpSection(el,'PERSONA',
+    '<div class="sp-sec-body"><div style="margin-bottom:6px"><strong>Role:</strong> '+esc(SP.persona.role)+'</div><div style="margin-bottom:8px"><strong>Tone:</strong> '+esc(SP.persona.tone)+'</div><ul class="sp-rules">'+SP.persona.rules.map(function(r){return'<li>'+esc(r)+'</li>'}).join('')+'</ul></div>',
+    'e.g. "make warmer and more casual"',
+    function(fb){return callClaude(AUTHOR_SYS,'Current: '+JSON.stringify(SP.persona)+'\nFeedback: '+(fb||'Improve')+'\nReturn JSON: {"role":"...","tone":"...","rules":["..."]}').then(function(r){SP.persona=JSON.parse(r);renderSysPrompt();showToast('Updated')})});
+
+  mkSpSection(el,'STUDY CONTEXT','<div class="sp-sec-body">'+esc(SP.research_summary)+'</div>',
+    'e.g. "emphasise health angle"',
+    function(fb){return callClaude(AUTHOR_SYS,'Current: '+SP.research_summary+'\nFeedback: '+(fb||'Improve')+'\nReturn plain text only.').then(function(r){SP.research_summary=r.replace(/^"|"$/g,'');renderSysPrompt();showToast('Updated')})});
+
+  mkSpSection(el,'AUDIENCE','<div class="sp-sec-body">'+esc(SP.audience_note)+'</div>',
+    'e.g. "mention pre-screened"',
+    function(fb){return callClaude(AUTHOR_SYS,'Current: '+SP.audience_note+'\nFeedback: '+(fb||'Improve')+'\nReturn plain text.').then(function(r){SP.audience_note=r.replace(/^"|"$/g,'');renderSysPrompt();showToast('Updated')})});
+
+  SP.sections.forEach(function(sec,secIdx){
+    var secWrap=document.createElement('div');secWrap.className='regen-section';
+    var card=document.createElement('div');card.className='sp-interview-section';
+    var hdrEl=document.createElement('div');hdrEl.className='sp-isec-hdr';
+    hdrEl.innerHTML='<div class="sp-isec-hdr-left"><span class="sp-isec-num">S'+sec.section_number+'</span><span class="sp-isec-title">'+esc(sec.title)+'</span></div><span class="sp-isec-mins">~'+sec.duration_min+' min</span>';
+    card.appendChild(hdrEl);
+    sec.questions.forEach(function(q,qIdx){
+      var qWrap=document.createElement('div');qWrap.className='regen-section';qWrap.style.margin='0';
+      var qBlock=document.createElement('div');qBlock.className='sp-q-block';
+      var probeHtml=q.probes.map(function(p){
+        var m=p.match(/^IF (.+?) THEN (.+)$/i);
+        if(m)return'<div class="sp-probe"><span class="if">IF</span> '+esc(m[1])+' <span class="if">THEN</span> '+esc(m[2])+'</div>';
+        return'<div class="sp-probe">'+esc(p)+'</div>';
+      }).join('');
+      qBlock.innerHTML='<div class="sp-q-hdr"><span class="sp-q-num">'+esc(q.q_number)+'</span><div class="sp-q-instruction">'+esc(q.instruction)+'</div></div>'
+        +(probeHtml?'<div class="sp-probes">'+probeHtml+'</div>':'')
+        +'<div class="sp-move-on">'+esc(q.move_on)+'</div>';
+      var qTb=mkToolbar('e.g. "make more open-ended"',function(fb,btn){
+        if(!getKey()){showToast('Add API key first',true);return}
+        btn.disabled=true;setLoading(qBlock,true);
+        callClaude(AUTHOR_SYS,'Section: '+sec.title+'\nQuestion: '+JSON.stringify(q)+'\nFeedback: '+(fb||'Improve')+'\nReturn JSON: {"q_number":"'+q.q_number+'","instruction":"...","probes":["IF ... THEN ..."],"move_on":"Move on when: ..."}')
+        .then(function(r){SP.sections[secIdx].questions[qIdx]=JSON.parse(r);renderSysPrompt();showToast('Q'+q.q_number+' updated')})
+        .catch(function(e){showToast(e.message,true);setLoading(qBlock,false);btn.disabled=false});
+      });
+      qWrap.appendChild(qBlock);qWrap.appendChild(qTb);card.appendChild(qWrap);
+    });
+    var secTb=mkToolbar('Regen entire section',function(fb,btn){
+      if(!getKey()){showToast('Add API key first',true);return}
+      btn.disabled=true;setLoading(card,true);
+      callClaude(AUTHOR_SYS,'Current: '+JSON.stringify(sec)+'\nFeedback: '+(fb||'Improve')+'\nReturn JSON: {"section_number":'+sec.section_number+',"title":"'+sec.title+'","duration_min":'+sec.duration_min+',"questions":[{"q_number":"...","instruction":"...","probes":["IF ... THEN ..."],"move_on":"Move on when: ..."}]}')
+      .then(function(r){SP.sections[secIdx]=JSON.parse(r);renderSysPrompt();showToast('Section updated')})
+      .catch(function(e){showToast(e.message,true);setLoading(card,false);btn.disabled=false});
+    });
+    secWrap.appendChild(card);secWrap.appendChild(secTb);el.appendChild(secWrap);
+  });
+
+  var brandRows=SP.brand_registry.map(function(line){
+    var parts=line.split('|').map(function(s){return s.trim()});
+    return'<tr><td class="brand-nm">'+esc(parts[0]||'')+'</td><td class="brand-al">'+esc(parts[1]||'\u2014')+'</td><td class="brand-pr">'+esc(parts[2]||'')+'</td></tr>';
+  }).join('');
+  mkSpSection(el,'BRAND REGISTRY',
+    '<div style="overflow-x:auto;padding:4px 0"><table class="brand-table"><thead><tr><th>Brand</th><th>Aliases</th><th>Pronunciation</th></tr></thead><tbody>'+brandRows+'</tbody></table></div>',
+    'e.g. "add Nene Chicken"',
+    function(fb){return callClaude(AUTHOR_SYS,'Current: '+JSON.stringify(SP.brand_registry)+'\nBrands: '+JSON.stringify(DATA.brand_registry)+'\nFeedback: '+(fb||'Improve')+'\nReturn JSON array: ["Brand | alias | pronunciation"]').then(function(r){SP.brand_registry=JSON.parse(r);renderSysPrompt();showToast('Updated')})});
+
+  mkSpSection(el,'CORE RULES',
+    '<ul class="sp-rules" style="padding:12px 16px">'+SP.core_rules.map(function(r){return'<li>'+esc(r)+'</li>'}).join('')+'</ul>',
+    'e.g. "add rule about audio dropouts"',
+    function(fb){return callClaude(AUTHOR_SYS,'Current: '+JSON.stringify(SP.core_rules)+'\nFeedback: '+(fb||'Improve')+'\nReturn JSON array: ["rule1","rule2"]').then(function(r){SP.core_rules=JSON.parse(r);renderSysPrompt();showToast('Updated')})});
+
+  var rawWrap=document.createElement('div');rawWrap.style.marginTop='24px';
+  rawWrap.innerHTML='<div class="section-label">Full prompt &mdash; copy to Gemini AI Studio</div>'
+    +'<div style="margin-bottom:7px"><button class="btn btn-dark" onclick="copyRawPrompt()">Copy to clipboard</button></div>'
+    +'<pre class="raw-block">'+esc(rawTxt)+'</pre>';
+  el.appendChild(rawWrap);
+}
+
+function copyRawPrompt(){navigator.clipboard.writeText(buildRawPrompt()).then(function(){showToast('Copied to clipboard!')}).catch(function(){showToast('Use the raw text below',true)})}
+
+// ── INIT ──
+updateStepIndicator();
+document.getElementById('briefTextarea').value=BRIEF;
+updateOverviewCards();
+</script>
+</body>
+</html>
